@@ -767,7 +767,17 @@ footer.credit .credit-line{margin-top:0.3rem;}
             };
             reader.readAsDataURL(file);
           });
-          row.appendChild(img); row.appendChild(fileInp);
+          var removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn btn-outline btn-sm';
+          removeBtn.textContent = 'Hapus Foto';
+          removeBtn.addEventListener('click', function(){
+            fileInp.value = '';
+            fileInp.dataset.newValue = '';
+            img.removeAttribute('src');
+            img.style.visibility = 'hidden';
+          });
+          row.appendChild(img); row.appendChild(fileInp); row.appendChild(removeBtn);
           wrap.appendChild(row);
         }
         rowWrap.appendChild(wrap);
@@ -854,7 +864,7 @@ footer.credit .credit-line{margin-top:0.3rem;}
         FIELDS.forEach(function(f){
           if (f.type === 'image'){
             var fi = document.getElementById('in-'+f.key);
-            if (fi && fi.dataset && fi.dataset.newValue){ data[f.key] = fi.dataset.newValue; }
+            if (fi && fi.dataset && fi.dataset.newValue !== undefined){ data[f.key] = fi.dataset.newValue || null; }
           } else {
             var el = document.getElementById('in-'+f.key);
             if (el){ data[f.key] = el.value; }
