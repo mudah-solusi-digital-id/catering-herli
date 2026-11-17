@@ -140,6 +140,8 @@ hr.rule{height:1px; background:var(--line); border:none;}
 .admin-img-preview{width:64px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:var(--surface); flex-shrink:0;}
 .admin-img-row input[type="file"]{font-size:0.78rem; max-width:150px;}
 .admin-img-row .btn{flex-shrink:0;}
+.admin-img-row input[type="text"]{font:inherit; padding:0.5em 0.8em; border-radius:10px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); max-width:220px;}
+.admin-gallery-list{display:flex; flex-direction:column; gap:0.9rem;}
 .admin-edit-actions{display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-top:0.2rem; padding-top:0.9rem; border-top:1px solid var(--line);}
 .admin-save-msg{font-size:0.85rem; color:var(--green-ink); font-weight:600;}
 .admin-pw-change{display:none; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--line);}
@@ -434,31 +436,13 @@ footer.credit .credit-line{margin-top:0.3rem;}
 
   <section id="galeri">
     <div class="section-head"><div class="head-text"><p class="eyebrow">Galeri Foto</p><h2>Suasana &amp; Armada Kami</h2></div></div>
-    <div class="gallery-grid">
-      <div class="gallery-slot has-photo" id="galSlot0">
+    <div class="gallery-grid" id="galeriGrid">
+      <div class="gallery-slot has-photo">
         <img src="photos/truck.jpg" alt="Truk dan logo usaha Catering Herli">
         <span class="cap">Armada &amp; logo usaha</span>
       </div>
-      <div class="gallery-slot" id="galSlot1">
-        <div class="slot-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.2-2h5.6L16 6"/></svg>
-          <span>Foto hidangan</span>
-        </div>
-      </div>
-      <div class="gallery-slot" id="galSlot2">
-        <div class="slot-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.2-2h5.6L16 6"/></svg>
-          <span>Foto acara</span>
-        </div>
-      </div>
-      <div class="gallery-slot" id="galSlot3">
-        <div class="slot-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.2-2h5.6L16 6"/></svg>
-          <span>Foto tim/dapur</span>
-        </div>
-      </div>
     </div>
-    <p class="gallery-note">Slot kosong sudah disiapkan pas ukurannya, tinggal diganti begitu foto hidangan, acara, dan tim/dapur yang asli ada.</p>
+    <p class="gallery-note">Foto di galeri ini bisa ditambah atau dihapus kapan saja lewat panel admin, jumlahnya tidak dibatasi.</p>
   </section>
 
   <hr class="rule">
@@ -588,7 +572,7 @@ footer.credit .credit-line{margin-top:0.3rem;}
     testiQuote1:'Langganan sudah bertahun tahun, setiap ada acara pasti pesan cateringnya di Herli.', testiName1:'Risna S.',
     testiQuote2:'Murah, sehat, serta halal.', testiName2:'Chua T.',
     testiQuote3:'Recommended buat yang mau hajatan tanpa perlu repot memikirkan makanan.', testiName3:'Muh. A.',
-    galeri0:null, galeri1:null, galeri2:null, galeri3:null
+    galeriFotos: [ { src:'photos/truck.jpg', caption:'Armada & logo usaha' } ]
   };
 
   var FIELDS = [
@@ -605,10 +589,6 @@ footer.credit .credit-line{margin-top:0.3rem;}
     {group:'Teks & Layanan', key:'layanan1', label:'Deskripsi: Ulang Tahun', type:'textarea'},
     {group:'Teks & Layanan', key:'layanan2', label:'Deskripsi: Seminar & Acara Kantor', type:'textarea'},
     {group:'Teks & Layanan', key:'layanan3', label:'Deskripsi: Hajatan & Acara Lainnya', type:'textarea'},
-    {group:'Galeri Foto', key:'galeri0', label:'Foto 1 (Armada & Logo)', type:'image'},
-    {group:'Galeri Foto', key:'galeri1', label:'Foto 2 (Hidangan)', type:'image'},
-    {group:'Galeri Foto', key:'galeri2', label:'Foto 3 (Acara)', type:'image'},
-    {group:'Galeri Foto', key:'galeri3', label:'Foto 4 (Tim/Dapur)', type:'image'},
     {group:'Ulasan', key:'testiQuote0', label:'Ulasan 1 - Teks', type:'textarea'},
     {group:'Ulasan', key:'testiName0', label:'Ulasan 1 - Nama', type:'text'},
     {group:'Ulasan', key:'testiQuote1', label:'Ulasan 2 - Teks', type:'textarea'},
@@ -619,11 +599,7 @@ footer.credit .credit-line{margin-top:0.3rem;}
     {group:'Ulasan', key:'testiName3', label:'Ulasan 4 - Nama', type:'text'}
   ];
 
-  var ORIGINAL_SLOT_HTML = {};
-  [1,2,3].forEach(function(i){
-    var slot = document.getElementById('galSlot'+i);
-    if (slot) ORIGINAL_SLOT_HTML[i] = slot.innerHTML;
-  });
+  var currentGalleryItems = [];
 
   function readCache(){ try{ return JSON.parse(localStorage.getItem(DATA_CACHE_KEY)) || {}; }catch(e){ return {}; } }
   function writeCache(data){ try{ localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data)); }catch(e){} }
@@ -660,26 +636,33 @@ footer.credit .credit-line{margin-top:0.3rem;}
   function digitsOnly(s){ return (s||'').replace(/\D/g,''); }
   function intlNumber(s){ var d = digitsOnly(s); if (d.charAt(0)==='0') d = '62'+d.slice(1); return d; }
 
-  function setSlot(i, src){
-    var slot = document.getElementById('galSlot'+i);
-    if (!slot) return;
-    if (src){
-      slot.innerHTML = '';
+  function renderGallery(items){
+    var grid = document.getElementById('galeriGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    var valid = (items || []).filter(function(it){ return it && it.src; });
+    if (!valid.length){
+      var empty = document.createElement('div');
+      empty.className = 'gallery-slot';
+      empty.innerHTML = '<div class="slot-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.2-2h5.6L16 6"/></svg><span>Foto segera ditambahkan</span></div>';
+      grid.appendChild(empty);
+      return;
+    }
+    valid.forEach(function(item){
+      var slot = document.createElement('div');
+      slot.className = 'gallery-slot has-photo';
       var img = document.createElement('img');
-      img.src = src;
-      img.alt = (i===0) ? 'Armada dan logo usaha Catering Herli' : 'Foto Catering Herli';
+      img.src = item.src;
+      img.alt = item.caption || 'Foto Catering Herli';
       slot.appendChild(img);
-      if (i === 0){
+      if (item.caption){
         var cap = document.createElement('span');
         cap.className = 'cap';
-        cap.textContent = 'Armada & logo usaha';
+        cap.textContent = item.caption;
         slot.appendChild(cap);
       }
-      slot.classList.add('has-photo');
-    } else {
-      slot.innerHTML = ORIGINAL_SLOT_HTML[i] || '';
-      slot.classList.remove('has-photo');
-    }
+      grid.appendChild(slot);
+    });
   }
 
   function applyData(data){
@@ -710,12 +693,7 @@ footer.credit .credit-line{margin-top:0.3rem;}
     if (byId('copyAlamatBtn')) byId('copyAlamatBtn').setAttribute('data-copy', data.alamatJalan + ', ' + data.alamatKota);
     if (byId('copyWaBtn')) byId('copyWaBtn').setAttribute('data-copy', data.wa);
 
-    for (var i = 0; i <= 3; i++){
-      var val = data['galeri'+i];
-      if (val) setSlot(i, val);
-      else if (i === 0) setSlot(0, 'photos/truck.jpg');
-      else setSlot(i, null);
-    }
+    renderGallery(data.galeriFotos);
   }
 
   function renderForm(data){
@@ -749,43 +727,88 @@ footer.credit .credit-line{margin-top:0.3rem;}
           var inp = document.createElement('input');
           inp.type = 'text'; inp.id = 'in-'+f.key; inp.name = f.key; inp.value = data[f.key] || '';
           wrap.appendChild(inp);
-        } else if (f.type === 'image'){
-          var row = document.createElement('div');
-          row.className = 'admin-img-row';
-          var img = document.createElement('img');
-          img.className = 'admin-img-preview';
-          var current = data[f.key] || (f.key === 'galeri0' ? 'photos/truck.jpg' : '');
-          if (current){ img.src = current; } else { img.style.visibility = 'hidden'; }
-          var fileInp = document.createElement('input');
-          fileInp.type = 'file'; fileInp.accept = 'image/*'; fileInp.id = 'in-'+f.key; fileInp.name = f.key;
-          fileInp.addEventListener('change', function(){
-            var fi = this, file = fi.files && fi.files[0];
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = function(){
-              img.src = reader.result;
-              img.style.visibility = 'visible';
-              fi.dataset.newValue = reader.result;
-            };
-            reader.readAsDataURL(file);
-          });
-          var removeBtn = document.createElement('button');
-          removeBtn.type = 'button';
-          removeBtn.className = 'btn btn-outline btn-sm';
-          removeBtn.textContent = 'Hapus Foto';
-          removeBtn.addEventListener('click', function(){
-            fileInp.value = '';
-            fileInp.dataset.newValue = '';
-            img.removeAttribute('src');
-            img.style.visibility = 'hidden';
-          });
-          row.appendChild(img); row.appendChild(fileInp); row.appendChild(removeBtn);
-          wrap.appendChild(row);
         }
         rowWrap.appendChild(wrap);
       });
       form.appendChild(rowWrap);
+      if (groupName === 'Teks & Layanan'){
+        renderGalleryGroup(form, data);
+      }
     });
+  }
+
+  function renderGalleryGroup(form, data){
+    var title = document.createElement('div');
+    title.className = 'admin-group-title';
+    title.textContent = 'Galeri Foto';
+    form.appendChild(title);
+
+    var note = document.createElement('p');
+    note.className = 'admin-note';
+    note.style.marginBottom = '0.6rem';
+    note.textContent = 'Foto boleh ditambah sebanyak apapun. Klik Tambah Foto untuk slot baru, atau Hapus Foto Ini untuk menghapus salah satu.';
+    form.appendChild(note);
+
+    var list = document.createElement('div');
+    list.className = 'admin-gallery-list';
+    form.appendChild(list);
+
+    currentGalleryItems = (data.galeriFotos || []).map(function(it){
+      return { src: (it && it.src) || '', caption: (it && it.caption) || '' };
+    });
+    if (!currentGalleryItems.length) currentGalleryItems.push({ src:'', caption:'' });
+
+    function draw(){
+      list.innerHTML = '';
+      currentGalleryItems.forEach(function(item, idx){
+        var row = document.createElement('div');
+        row.className = 'admin-img-row';
+        var img = document.createElement('img');
+        img.className = 'admin-img-preview';
+        if (item.src){ img.src = item.src; } else { img.style.visibility = 'hidden'; }
+        var fileInp = document.createElement('input');
+        fileInp.type = 'file'; fileInp.accept = 'image/*';
+        fileInp.addEventListener('change', function(){
+          var file = this.files && this.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function(){
+            item.src = reader.result;
+            img.src = reader.result;
+            img.style.visibility = 'visible';
+          };
+          reader.readAsDataURL(file);
+        });
+        var capInp = document.createElement('input');
+        capInp.type = 'text';
+        capInp.placeholder = 'Keterangan foto (boleh dikosongkan)';
+        capInp.value = item.caption || '';
+        capInp.addEventListener('input', function(){ item.caption = capInp.value; });
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-outline btn-sm';
+        removeBtn.textContent = 'Hapus Foto Ini';
+        removeBtn.addEventListener('click', function(){
+          currentGalleryItems.splice(idx, 1);
+          if (!currentGalleryItems.length) currentGalleryItems.push({ src:'', caption:'' });
+          draw();
+        });
+        row.appendChild(img); row.appendChild(fileInp); row.appendChild(capInp); row.appendChild(removeBtn);
+        list.appendChild(row);
+      });
+    }
+    draw();
+
+    var addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline btn-sm';
+    addBtn.textContent = '+ Tambah Foto';
+    addBtn.style.marginTop = '0.7rem';
+    addBtn.addEventListener('click', function(){
+      currentGalleryItems.push({ src:'', caption:'' });
+      draw();
+    });
+    form.appendChild(addBtn);
   }
 
   var adminPanel = document.getElementById('adminPanel');
@@ -864,14 +887,12 @@ footer.credit .credit-line{margin-top:0.3rem;}
       var submitBtn = adminEditForm.closest ? document.querySelector('button[form=adminEditForm]') : null;
       loadData().then(function(data){
         FIELDS.forEach(function(f){
-          if (f.type === 'image'){
-            var fi = document.getElementById('in-'+f.key);
-            if (fi && fi.dataset && fi.dataset.newValue !== undefined){ data[f.key] = fi.dataset.newValue || null; }
-          } else {
-            var el = document.getElementById('in-'+f.key);
-            if (el){ data[f.key] = el.value; }
-          }
+          var el = document.getElementById('in-'+f.key);
+          if (el){ data[f.key] = el.value; }
         });
+        data.galeriFotos = currentGalleryItems
+          .filter(function(it){ return it && it.src; })
+          .map(function(it){ return { src: it.src, caption: it.caption || '' }; });
         if (submitBtn) submitBtn.disabled = true;
         saveData(data).then(function(ok){
           if (submitBtn) submitBtn.disabled = false;
